@@ -54,3 +54,25 @@ jobs:
       - name: Verificar tipos Flow
         working-directory: newIDE/app
         run: npm run flow -- --show-all-errors
+
+  runtime-tests:
+    name: Testar scripts WMK no navegador
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'false'
+      NODE_OPTIONS: '--max-old-space-size=6144'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Preparar runtime e dependencias da IDE
+        working-directory: newIDE/app
+        run: npm ci --no-audit --no-fund
+      - name: Instalar ferramentas de teste do GDJS
+        working-directory: GDJS/tests
+        run: npm ci --no-audit --no-fund
+      - name: Rodar testes de start e update do WMK em Chrome Headless
+        working-directory: GDJS/tests
+        run: npm test -- --grep "WMK attached JavaScript scripts"
