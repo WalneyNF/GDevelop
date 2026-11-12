@@ -9,7 +9,10 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const {createJsonGameStore} = require('./GameDataStore');
-const gameStore = createJsonGameStore(process.env.WMK_GAME_DATA_DIR || path.join(__dirname, 'data'));
+const {createGameKeyStore} = require('./GameKeyStore');
+const DATA_DIR = process.env.WMK_GAME_DATA_DIR || path.join(__dirname, 'data');
+const gameStore = createJsonGameStore(DATA_DIR);
+const gameKeys = createGameKeyStore(DATA_DIR);
 
 const PORT = Number(process.env.WMK_BRIDGE_PORT || '8767');
 const MCP_URL = process.env.WMK_MCP_URL || 'http://127.0.0.1:52520/mcp';
@@ -129,8 +132,16 @@ async function api(req, res) {
     });
     res.end(page); return;
   }
-  if (!validToken(req.headers.authorization))
-    return json(res, 401, {error:'Token Bearer inválido.'});
+  // Tokens de jogos só podem acessar seu próprio banco, jamais MCP/editor ou outros jogos.
+  const admin = validToken(req.headers.authorization);
+  const gameIdMatch = /^\/api\/v1\/games\/([A-Za-z0-9_-]{1,64})(?:\/|$)/.exec(pathname);
+  const keyToken = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || ''));
+  const needsWrite = ['POST','PUT','PATCH','DELETE'].includes(req.method);
+  const adminKeyRoute = !!/^\/api\/v1\/games\/[A-Za-z0-9_-]{1,64}\/keys(?:\/|$)/.test(pathname);
+  const gameAuthorized = !admin && !!gameIdMatch && !adminKeyRoute &&
+    gameKeys.verify(gameIdMatch[1],keyToken ? keyToken[1].trim() : '',needsWrite);
+  if (!admin && !gameAuthorized)
+    return json(res,401,{error:'Chave inválida, revogada ou sem permissão para este jogo.'});
   if (pathname === '/api/v1/health' && req.method === 'GET')
     return json(res, 200, {ok:true, bridge:'WMK External Bridge', version:'0.1.0',
       mcpConfigured:!!MCP_TOKEN, writeEnabled:WRITE_ENABLED});
@@ -139,6 +150,23 @@ async function api(req, res) {
   const gameDataMatch = /^\/api\/v1\/games\/([A-Za-z0-9_-]{1,64})(?:\/([A-Za-z0-9_-]{1,64}))?(?:\/([A-Za-z0-9_-]{1,64}))?$/.exec(pathname);
   if (pathname === '/api/v1/games' && req.method === 'GET')
     return json(res,200,{games:gameStore.listGames()});
+  // Gestão de chaves: SOMENTE administrador; retorno da chave apenas no momento da criação.
+  const keysRoute = /^\/api\/v1\/games\/([A-Za-z0-9_-]{1,64})\/keys(?:\/([0-9a-fA-F-]{36}))?$/.exec(pathname);
+  if (keysRoute) {
+    if (!admin) throw fail(403,'Somente administrador pode gerenciar chaves.');
+    const [,game,keyId]=keysRoute;
+    if (!keyId && req.method==='GET') return json(res,200,{game,keys:gameKeys.list(game)});
+    if (!keyId && req.method==='POST') {
+      if (!WRITE_ENABLED) throw fail(403,'Habilite WMK_ALLOW_WRITE para emitir chaves.');
+      const body=await bodyAsJson(req);
+      return json(res,201,gameKeys.issue(game,body));
+    }
+    if (keyId && req.method==='DELETE') {
+      if (!WRITE_ENABLED) throw fail(403,'Habilite WMK_ALLOW_WRITE para revogar chaves.');
+      return json(res,200,{revoked:gameKeys.revoke(game,keyId)});
+    }
+    throw fail(405,'Método não permitido.');
+  }
   if (gameDataMatch) {
     const [, game, collection, id] = gameDataMatch;
     if (!collection && req.method === 'GET')
@@ -235,6 +263,11 @@ async function api(req, res) {
       '/api/v1/health':{get:{summary:'Estado da ponte',responses:{'200':{description:'Estado'}}}},
       '/api/v1/endpoints':{get:{summary:'Catálogo de operações disponíveis',responses:{'200':{description:'Ferramentas disponíveis'}}}},
       '/api/v1/games':{get:{summary:'Lista bancos de dados de jogos locais',responses:{'200':{description:'IDs de jogos'}}}},
+      '/api/v1/games/{game}/keys':{
+        get:{summary:'Lista chaves sem exibir segredos (administrador)',responses:{'200':{description:'Chaves'}}},
+        post:{summary:'Cria chave por jogo, com escopo read/write (administrador)',responses:{'201':{description:'Segredo exibido uma única vez'}}}
+      },
+      '/api/v1/games/{game}/keys/{keyId}':{delete:{summary:'Revoga chave (administrador)',responses:{'200':{description:'Revogação'}}}},
       '/api/v1/games/{game}':{get:{summary:'Lista coleções do jogo',parameters:[{in:'path',name:'game',required:true,schema:{type:'string'}}],responses:{'200':{description:'Coleções'}}}},
       '/api/v1/games/{game}/{collection}':{
         get:{summary:'Lista registros ou estatísticas (?stats&field=campo)',responses:{'200':{description:'Registros'}}},
@@ -259,7 +292,7 @@ async function api(req, res) {
       };
     }
     return json(res,200,{openapi:'3.0.3',info:{title:'WMK Game Studio API',version:'0.1.0',
-      description:'Catálogo dinâmico dos recursos MCP realmente disponíveis no editor. Todas as operações exigem Bearer token.'},
+      description:'Operações MCP exigem token administrativo. Dados /games/{game} aceitam token do jogo, limitado ao próprio jogo e ao escopo read/write. Chaves são gerenciadas exclusivamente por administrador.'},
       servers:[{url:'http://127.0.0.1:'+PORT}],security:[{bearerAuth:[]}],
       components:{securitySchemes:{bearerAuth:{type:'http',scheme:'bearer'}}},paths});
   }
