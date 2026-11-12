@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Roadmap técnico do WMK Game Studio: GDevelop com experiência Unity + Godot e programação JavaScript no Monaco.">
+<title>WMK Game Studio — Roadmap de Desenvolvimento</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0f18;--panel:#141b29;--panel2:#1c2536;--border:#2d3b50;--ink:#edf3ff;--muted:#9caac0;--accent:#8a9cff;--cyan:#50d6cc;--gold:#ffca72;--good:#66d4a3;--danger:#f8a3a9;--radius:16px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(ellipse at 80% -5%,#263560 0%,transparent 38%),var(--bg);font:15px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink)}
+a{color:#b9c4ff;text-decoration:none}a:hover{text-decoration:underline}button,input{font:inherit}
+.shell{width:min(1320px,calc(100% - 36px));margin:auto}.top{padding:44px 0 30px;border-bottom:1px solid var(--border)}
+.eyebrow{font-size:12px;color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;font-weight:800}
+h1{font-size:clamp(32px,5.6vw,64px);letter-spacing:-.04em;line-height:1.04;margin:14px 0 16px}h2{font-size:clamp(23px,3vw,32px);letter-spacing:-.025em;margin:0 0 14px}h3{margin:0 0 8px;font-size:19px}p{margin:8px 0 12px}ul{margin:8px 0;padding-left:22px}li+li{margin-top:5px}
+.lead{max-width:870px;font-size:19px;color:#c9d4e7}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip,.status{border:1px solid var(--border);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:750;background:#1a2436;color:#c9d6ed}
+.status.prototype{color:var(--gold);border-color:#6b5537;background:#302719}.status.future{color:#b8c5df}.status.complete{color:var(--good);border-color:#335f51}
+.layout{display:grid;grid-template-columns:238px minmax(0,1fr);gap:26px;align-items:start;padding:32px 0 65px}
+aside{position:sticky;top:16px;align-self:start;border:1px solid var(--border);border-radius:var(--radius);padding:17px;background:#111826}
+aside strong{display:block;margin:0 0 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#bdc9dc}
+aside a{display:block;padding:8px 10px;border-radius:8px;color:#c3cee1;font-size:13px}aside a:hover{background:#222d41;text-decoration:none}
+main{min-width:0}section{margin-bottom:30px;scroll-margin-top:22px}
+.panel,.version{background:linear-gradient(150deg,#151e2d,#101724);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.metric{background:var(--panel2);border:1px solid var(--border);padding:18px;border-radius:12px}
+.metric b{font-size:26px;display:block;line-height:1.2}.metric small{color:var(--muted)}
+.note{border-left:3px solid var(--gold);padding:12px 17px;background:#2a251d;border-radius:0 10px 10px 0;margin:15px 0;color:#f3dfbd}
+.check{border-left-color:var(--cyan);background:#162a2b;color:#bcf1e9}
+.table-scroll{overflow:auto}table{border-collapse:collapse;width:100%;min-width:650px}th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top}th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#a7bad6}td{color:#d2dced}
+code{background:#202a3d;padding:2px 6px;border-radius:5px;color:#b4e8f1;font-size:.94em}pre{background:#0a1020;border:1px solid #304164;border-radius:12px;padding:18px;overflow:auto;font-size:13px;line-height:1.7;color:#d4e9ff}pre code{background:none;padding:0;color:inherit}
+.versions{display:grid;gap:13px}.version{padding:20px 22px}.version-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}.version .tagline{color:var(--muted);margin:5px 0 13px}.version details{border-top:1px solid var(--border);padding-top:10px}.version summary{cursor:pointer;font-weight:700;color:#b7cafa}.version summary:hover{color:white}
+.goals{display:grid;grid-template-columns:1fr 1fr;gap:12px}.goals>div{border:1px solid var(--border);border-radius:11px;background:#192334;padding:14px}
+.label{font-size:11px;letter-spacing:.12em;color:var(--cyan);font-weight:800;text-transform:uppercase}.goals p{margin:4px 0;color:#d6dfed}
+.filterbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:14px 0}.filterbar button{border:1px solid var(--border);padding:8px 13px;color:#dae3f7;background:var(--panel2);border-radius:9px;cursor:pointer}.filterbar button[aria-pressed=true]{background:#394c83;border-color:var(--accent);color:white}
+.checklist{display:grid;gap:8px}.checklist label{display:flex;gap:10px;align-items:flex-start;background:#1a2535;border:1px solid var(--border);border-radius:9px;padding:11px 13px;cursor:pointer}.checklist input{accent-color:var(--cyan);margin-top:5px}
+.progress{height:9px;background:#2a3243;border-radius:999px;overflow:hidden}.progress i{height:100%;width:0;display:block;background:linear-gradient(90deg,var(--cyan),var(--accent));transition:width .2s}
+.small{font-size:13px;color:var(--muted)}.row{display:flex;justify-content:space-between;gap:14px;align-items:center;flex-wrap:wrap}
+footer{border-top:1px solid var(--border);padding:28px 0 48px;color:var(--muted)}footer b{color:var(--ink)}
+@media(max-width:900px){.layout{grid-template-columns:1fr}aside{position:static;display:flex;flex-wrap:wrap;gap:5px}aside strong{flex-basis:100%}aside a{padding:5px 8px}.grid{grid-template-columns:1fr 1fr}.goals{grid-template-columns:1fr}}
+@media(max-width:560px){.shell{width:min(100% - 22px,1320px)}.grid{grid-template-columns:1fr}.panel,.version{padding:17px}.top{padding-top:24px}.lead{font-size:16px}}
+@media print{body{background:#fff;color:#111}aside,.filterbar,.checklist{display:none}.layout{display:block}.panel,.version,.metric,.goals>div{background:white;color:#111;border:1px solid #aaa;break-inside:avoid}h1,h2,h3,th,td,p,li{color:#111!important}a{color:#333}footer{color:#333}.version details{display:block}.status,.chip{color:#333}}
+</style>
+</head>
+<body>
+<header class="top"><div class="shell">
+ <div class="eyebrow">WMK • Documento mestre de produto e engenharia</div>
+ <h1>WMK Game Studio<br><span style="color:var(--accent)">Roadmap de evolução</span></h1>
+ <p class="lead">Uma nova experiência para o GDevelop: <b>organização de cenas e componentes inspirada em Unity</b>, <b>scripts e fluxos inspirados em Godot</b> e <b>edição JavaScript profissional com Monaco</b>. O editor visual continua existindo, mas programar sem eventos visuais será uma opção completa e independente.</p>
+ <div class="chips"><span class="chip">JavaScript como primeira classe</span><span class="chip">Monaco + IntelliSense</span><span class="chip">Objetos + componentes</span><span class="chip">Editor visual opcional</span><span class="chip">Hardware acessível</span><span class="chip">Licenças originais preservadas</span></div>
+</div></header>
+<div class="shell layout">
+<aside aria-label="Índice do roteiro"><strong>Navegação</strong>
+<a href="#visao">Visão e princípios</a><a href="#estado">Estado atual</a><a href="#experiencia">Experiência do usuário</a><a href="#arquitetura">Arquitetura</a><a href="#versoes">Roadmap por versões</a><a href="#criterios">Critérios de aceitação</a><a href="#qualidade">Testes e qualidade</a><a href="#riscos">Riscos e decisões</a><a href="#pendencias">Lista de trabalho</a><a href="#creditos">Créditos e links</a>
+</aside>
+<main>
+<section id="visao" class="panel"><h2>01. Visão do projeto</h2>
+<p><b>Missão:</b> tornar possível desenvolver um jogo inteiro em JavaScript no GDevelop, começando em um objeto, anexando <code>Robo.js</code>, escrevendo <code>start()</code>/<code>update(dt)</code> e clicando em Play — <b>sem abrir a aba Eventos</b>.</p>
+<div class="grid"><div class="metric"><b>2 modos</b><small>Visual ou Código, independentes</small></div><div class="metric"><b>1 motor</b><small>GDJS e exportadores existentes</small></div><div class="metric"><b>0 eventos</b><small>Obrigatórios no modo JavaScript</small></div></div>
+<div class="note"><b>Princípio de produto:</b> não criar um clone de Unity ou Godot do zero. Reaproveitar as bases maduras do GDevelop; alterar o fluxo de edição, o modelo de scripts e a ergonomia com compatibilidade.</div>
+<ul><li><b>Modo Visual:</b> eventos, condições, ações e comportamentos do GDevelop, mantidos para compatibilidade.</li><li><b>Modo Código:</b> arquivos JavaScript organizados por cena/objeto/componente, com ciclo de vida e API documentada.</li><li><b>Modo misto:</b> projetos podem combinar os dois modelos sem exigir um do outro.</li><li><b>Meta de interface:</b> painéis reposicionáveis, redimensionáveis, ocultáveis e layout restaurável, sem excesso de barras fixas.</li></ul>
+</section>
+<section id="estado" class="panel"><h2>02. Situação de partida — 12/11/2026</h2>
+<div class="grid"><div class="metric"><b>Fork ativo</b><small>WalneyNF/GDevelop</small></div><div class="metric"><b>PR #1</b><small>Branch de protótipo experimental</small></div><div class="metric"><b>Não pronto</b><small>Não homologado em Windows/exportação</small></div></div>
+<p><span class="status prototype">Implementado em protótipo</span> Aba <b>Script JS</b> no editor de objetos, botão <b>Anexar Script JS</b>, Monaco reutilizado, armazenamento inicial do código em variável interna e execução experimental de <code>start()</code>/<code>update(dt)</code> por instância.</p>
+<p><span class="status complete">Verificação específica</span> A checagem TypeScript do runtime GDJS passou em execução de CI observada. Isso <b>não</b> substitui teste funcional da interface.</p>
+<p><span class="status future">A validar</span> Flow e lint da interface, funcionamento real do Monaco, salvar/reabrir, cancelamento, hot reload, build Windows, exportação e compatibilidade de projetos.</p>
+<div class="note">O protótipo usa a variável interna <code>__WMK_JAVASCRIPT_SOURCE</code>, não um arquivo físico <code>.js</code>. Isso é um expediente temporário, que deverá ser substituído por um sistema de arquivos/recursos de scripts.</div>
+</section>
+<section id="experiencia" class="panel"><h2>03. Experiência desejada — Unity + Godot + Monaco</h2>
+<div class="table-scroll"><table><thead><tr><th>Área</th><th>Resultado final</th><th>Referência</th></tr></thead><tbody>
+<tr><td>Árvore de cenas</td><td>Hierarquia navegável; arrastar, agrupar, duplicar, instanciar e reutilizar objetos</td><td>Godot / Unity</td></tr>
+<tr><td>Inspetor</td><td>Transform, Renderer, Collider, Scripts, variáveis expostas; edição em tempo real</td><td>Unity</td></tr>
+<tr><td>Scripts</td><td>Botão Anexar Script, múltiplos scripts por objeto, abrir por duplo clique e renomear arquivos</td><td>Unity / Godot</td></tr>
+<tr><td>Monaco</td><td>Abas, IntelliSense da API WMK/GDJS, hover, navegação, referências, snippets, formatação, erros, busca e minimapa</td><td>VS Code</td></tr>
+<tr><td>Workspace</td><td>Painéis destacáveis e móveis, divisões, zoom, temas, restauração do layout em JSON</td><td>Blender / Godot</td></tr>
+<tr><td>Execução</td><td>Play, pausa, passo a passo, breakpoints, console, inspeção de variáveis e profiler</td><td>Godot / Unity</td></tr>
+<tr><td>Fluxos sem código</td><td>Eventos e programação visual continuam disponíveis, sem obrigatoriedade</td><td>GDevelop</td></tr>
+</tbody></table></div>
+<h3 style="margin-top:20px">Primeiro caso de uso verificável</h3>
+<pre><code>// Script anexado a spr_robo — API futura do WMK
+export default class Robo extends WMK.Component {
+  start() {
+    this.velocidade = 180;
+  }
+  update(dt) {
+    if (WMK.Input.isPressed('ArrowRight')) {
+      this.object.x += this.velocidade * dt;
+    }
+  }
+}</code></pre>
+<p class="small">A sintaxe acima é o <b>alvo de design</b>, não uma API já entregue. A primeira versão experimental usa funções <code>start()</code>/<code>update(dt)</code> com variáveis <code>object</code>, <code>runtimeScene</code> e <code>gdjs</code>.</p>
+</section>
+<section id="arquitetura" class="panel"><h2>04. Arquitetura técnica proposta</h2>
+<pre><code>WMK Game Studio (React / Electron)
+  ├── Workspace e painéis gerenciáveis
+  ├── Scene Tree / Inspetor / Assets
+  ├── Script Explorer + Monaco + language service
+  ├── Script Resource Manager (.js / referências)
+  ├── Projetos: cenas + objetos + componentes + scripts
+  └── Preview / Debugger
+                │
+                ▼
+  Ponte de compilação e hot reload
+  ├── Validação/importação de scripts
+  ├── Cache por código + identificação do recurso
+  ├── Bindings de objeto/cena/input/física
+  └── Gerador de manifest para exportação
+                │
+                ▼
+  Runtime GDJS (mantido e expandido)
+  ├── Ciclo de vida por instância
+  ├── Física / Animação / Renderização
+  ├── Eventos visuais (opcionais)
+  ├── Recursos / Prefabs / Cenas
+  └── Exportadores Web / Windows / Mobile</code></pre>
+<div class="goals">
+<div><div class="label">Editor</div><p>Integrar Monaco como workspace completo, reaproveitando <code>newIDE/app/src/CodeEditor</code>.</p></div>
+<div><div class="label">Runtime</div><p>Evitar recompilar JavaScript a cada frame; isolar estado por instância; oferecer logs, tratamento de exceções e lifecycle.</p></div>
+<div><div class="label">Persistência</div><p>Substituir variável interna por recursos de script referenciados pelo projeto; definir import/export e migração reversível.</p></div>
+<div><div class="label">Segurança</div><p>Tratar scripts como código confiável; avisar ao importar projetos; evitar executar scripts de editor involuntariamente.</p></div>
+</div>
+<h3 style="margin-top:20px">Contratos de execução previstos</h3>
+<div class="table-scroll"><table><thead><tr><th>Evento</th><th>Semântica</th><th>Fase</th></tr></thead><tbody>
+<tr><td><code>start()</code></td><td>Uma vez por instância criada; após propriedades básicas configuradas</td><td>Inicialização</td></tr>
+<tr><td><code>update(dt)</code></td><td>A cada quadro; delta em segundos, sem depender de FPS fixo</td><td>Pré-eventos ou fase documentada</td></tr>
+<tr><td><code>fixedUpdate(dt)</code></td><td>Passo fixo de simulação; somente após decisão de arquitetura e testes</td><td>Futuro</td></tr>
+<tr><td><code>onCollision(other)</code></td><td>Notificação controlada de colisão; entrada/saída/contínua devem ser especificadas</td><td>Futuro</td></tr>
+<tr><td><code>onDestroy()</code></td><td>Liberação de recursos e desconexão de sinais</td><td>Futuro</td></tr>
+</tbody></table></div>
+</section>
+<section id="versoes"><h2>05. Roadmap por versões</h2><p class="small">Marcos são ordenados por dependência técnica. Versões são propostas; não são lançamentos disponíveis. Nenhuma data de entrega é prometida.</p>
+<div class="filterbar" role="group" aria-label="Filtrar marcos"><button type="button" data-filter="all" aria-pressed="true">Todos</button><button type="button" data-filter="foundation" aria-pressed="false">Fundação</button><button type="button" data-filter="product" aria-pressed="false">Editor</button><button type="button" data-filter="quality" aria-pressed="false">Qualidade</button></div>
+<div class="versions">
+<article class="version" data-category="foundation"><div class="version-head"><div><span class="label">M0 • Protótipo experimental</span><h3>v0.1 — Script anexado e Monaco</h3></div><span class="status prototype">Parcial no PR #1</span></div><p class="tagline">Provar que um robô se move apenas com JS anexado ao objeto.</p><details open><summary>Escopo e critérios</summary><ul><li>Selecionar <code>spr_robo</code>, abrir Script JS e anexar código.</li><li>Usar Monaco existente e ciclo <code>start/update(dt)</code>.</li><li>Salvar, fechar, reabrir e executar sem evento da cena.</li><li>Testes isolados por instância, tipagem Flow/TypeScript, compilação Windows e smoke test.</li><li><b>Não liberar</b> antes de demonstrar jogo real funcionando.</li></ul></details></article>
+<article class="version" data-category="foundation"><div class="version-head"><div><span class="label">M1 • Fundação de scripts</span><h3>v0.2 — Recursos .js e lifecycle sólido</h3></div><span class="status future">Planejado • P0</span></div><p class="tagline">Eliminar a variável interna provisória e separar script-fonte de instância.</p><details><summary>Entregas</summary><ul><li>Arquivos/recurso de script com ID estável, referência por objeto e renomeação segura.</li><li>Importação, exportação, salvamento atômico, migração do protótipo e rollback.</li><li>Compilação em cache, erros por script/linha e comportamento seguro em hot reload.</li><li><code>start/update/onDestroy</code> documentados; teste em preview e projeto exportado.</li><li>Compatibilidade com projetos existentes e sem script.</li></ul></details></article>
+<article class="version" data-category="product"><div class="version-head"><div><span class="label">M2 • Fluxo de código</span><h3>v0.3 — Modo Código em abas</h3></div><span class="status future">Planejado • P0</span></div><p class="tagline">Desenvolver sem jamais abrir Eventos.</p><details><summary>Entregas</summary><ul><li>Explorador de Scripts, criação por objeto/cena, duplo clique e abas independentes.</li><li>Monaco amplo: temas, atalhos, snippets, busca, minimapa, formatação, fonte/zoom, localizar referências.</li><li>Indicadores de código alterado, salvar todos, histórico básico e tratamento de conflitos.</li><li>Comandos do editor: Novo Script, Anexar, Abrir, Desanexar, Duplicar e Localizar.</li><li>Teste de usabilidade: criar jogo apenas pelo fluxo Código.</li></ul></details></article>
+<article class="version" data-category="product"><div class="version-head"><div><span class="label">M3 • Componentes</span><h3>v0.4 — Modelo Unity + Godot</h3></div><span class="status future">Planejado • P0</span></div><p class="tagline">Múltiplos scripts e componentes por objeto, sem programação engessada.</p><details><summary>Entregas</summary><ul><li>Componente/script com instância própria e parâmetros expostos no Inspetor.</li><li>Ordem de execução definida, habilitar/desabilitar e dependências entre componentes.</li><li>Componentes base: movimento, vida, inventário, interação, porta e coletável.</li><li>Composição e reutilização de objetos/prefabs; sinais e comunicação entre instâncias.</li><li>Exemplo: um robô com Movimento.js, Vida.js e Inventario.js.</li></ul></details></article>
+<article class="version" data-category="product"><div class="version-head"><div><span class="label">M4 • Ergonomia</span><h3>v0.5 — Workspaces livres e Inspetor</h3></div><span class="status future">Planejado • P1</span></div><p class="tagline">Interface profissional, leve e configurável.</p><details><summary>Entregas</summary><ul><li>Árvore de cena, Inspetor, Console, Assets e Código como painéis movíveis/redimensionáveis.</li><li>Layouts salvos em JSON, presets: Código, Cena 2D, Depuração e Minimalista.</li><li>Busca de comandos, menus por categoria, atalhos e escala adaptável para telas pequenas.</li><li>Propriedades refletidas no Inspetor, edição de valores e sincronização com scripts.</li><li>Evitar excesso de painéis fixos; medir uso de memória em máquinas modestas.</li></ul></details></article>
+<article class="version" data-category="quality"><div class="version-head"><div><span class="label">M5 • Diagnóstico</span><h3>v0.6 — Debugger e IntelliSense</h3></div><span class="status future">Planejado • P0/P1</span></div><p class="tagline">Identificar erros sem procurar mensagens perdidas no console.</p><details><summary>Entregas</summary><ul><li>Definições TypeScript para WMK e GDJS; IntelliSense contextual por objeto.</li><li>Autocompletar e documentação em hover; exemplos verificáveis.</li><li>Breakpoints e mapeamento correto para código-fonte; pausas/step/variáveis e pilha de chamadas.</li><li>Console por instância e script, filtros de erros e relatório com linha/arquivo.</li><li>Profiler de CPU, alocação e tempo gasto em scripts.</li></ul></details></article>
+<article class="version" data-category="foundation"><div class="version-head"><div><span class="label">M6 • Ecossistema</span><h3>v0.7 — Eventos, física e módulos</h3></div><span class="status future">Planejado • P1</span></div><p class="tagline">API coesa para jogos reais, 2D primeiro e depois 3D.</p><details><summary>Entregas</summary><ul><li>API de cenas, câmera, input, animações, física, áudio, timers, UI e persistência.</li><li>Sinais, colisões e eventos com semântica consistente.</li><li>Gerenciamento de módulos e dependências com empacotamento compatível com exportadores.</li><li>Biblioteca de exemplos: plataforma, top-down, puzzle, inventário e RTS mínimo.</li><li>Política de desempenho e compatibilidade entre web/desktop/mobile.</li></ul></details></article>
+<article class="version" data-category="quality"><div class="version-head"><div><span class="label">M7 • Distribuição</span><h3>v0.8–0.9 — Projetos, build e comunidade</h3></div><span class="status future">Planejado • P1</span></div><p class="tagline">Do laboratório a uma ferramenta instalável, reproduzível e documentada.</p><details><summary>Entregas</summary><ul><li>Gerador de projetos JS, modelos, assistente de migração e exemplos de cenas reutilizáveis.</li><li>Builds assináveis ou claramente identificados, instalador/ZIP e verificação de artefatos.</li><li>Testes Windows + web; exportação multiplataforma conforme compatibilidade validada.</li><li>Manuais HTML pt-BR para iniciantes, intermediários e desenvolvedores.</li><li>Créditos dos autores originais, licenças, changelog, guia de contribuição e issues.</li></ul></details></article>
+<article class="version" data-category="quality"><div class="version-head"><div><span class="label">M8 • Release estável</span><h3>v1.0 — WMK Game Studio</h3></div><span class="status future">Meta de lançamento</span></div><p class="tagline">Fluxo de desenvolvimento JavaScript completo, testado e sustentável.</p><details><summary>Condições mínimas</summary><ul><li>Criar, executar, depurar, salvar e exportar um jogo 2D inteiramente em JavaScript.</li><li>Compatibilidade com modo visual e projetos legados testada.</li><li>Documentação completa da API, exemplos e política de migração.</li><li>Smoke tests automatizados e release verificável, sem recursos ficticiamente concluídos.</li><li>Interface polida, layout persistente e desempenho aceitável em PC de entrada.</li></ul></details></article>
+</div></section>
+<section id="criterios" class="panel"><h2>06. Critérios objetivos de aceitação</h2>
+<p>Um marco só passa a <b>concluído</b> quando a implementação existe no repositório, os testes relevantes passam e há prova de funcionamento no aplicativo instalado.</p>
+<div class="table-scroll"><table><thead><tr><th>Ensaio</th><th>Resultado esperado</th><th>Falha que bloqueia entrega</th></tr></thead><tbody>
+<tr><td>Robô JavaScript</td><td>Movimenta com setas usando script anexado</td><td>Precisa adicionar evento visual</td></tr>
+<tr><td>Persistência</td><td>Salvar/reabrir mantém scripts e referências</td><td>Perda de código ou duplicações</td></tr>
+<tr><td>Múltiplas instâncias</td><td>Estado independente de cada robô</td><td>Variáveis compartilhadas indevidamente</td></tr>
+<tr><td>Erro no script</td><td>Mensagem com arquivo, linha e objeto</td><td>Travamento total sem diagnóstico</td></tr>
+<tr><td>Undo/Cancel</td><td>Reversão coerente de alterações</td><td>Código desaparece ao cancelar editor</td></tr>
+<tr><td>Exportação</td><td>Jogo exportado reproduz o preview</td><td>Script executa só no editor</td></tr>
+<tr><td>Compatibilidade</td><td>Projeto antigo abre e executa sem regressões</td><td>Eventos clássicos quebrados</td></tr>
+</tbody></table></div>
+</section>
+<section id="qualidade" class="panel"><h2>07. Estratégia de testes, CI e desempenho</h2>
+<div class="goals">
+<div><div class="label">Testes unitários</div><p>Lifecycle, cache de script, estado por instância, carregamento, erros e migração.</p></div>
+<div><div class="label">Integração</div><p>Editor ↔ projeto ↔ runtime ↔ hot reload ↔ exportação; scripts combinados com eventos visuais.</p></div>
+<div><div class="label">E2E e visual</div><p>Fluxo criar objeto → anexar → digitar → salvar → Play; screenshots e regressão de layout.</p></div>
+<div><div class="label">Benchmark</div><p>Inicialização, memória e FPS com centenas de objetos com e sem scripts; comparar contra GDevelop base.</p></div>
+</div>
+<p><b>Pipeline sugerido:</b> ESLint + Flow (IDE), TypeScript (GDJS), testes runtime, build web, build Windows e smoke test do jogo exemplo. Publicação de artefatos apenas quando as verificações exigidas passarem.</p>
+</section>
+<section id="riscos" class="panel"><h2>08. Riscos e decisões técnicas</h2>
+<div class="table-scroll"><table><thead><tr><th>Risco</th><th>Impacto</th><th>Mitigação</th></tr></thead><tbody>
+<tr><td>Alterar o runtime principal</td><td>Regressão de jogos antigos</td><td>Módulo isolável, feature flag inicial e testes de regressão</td></tr>
+<tr><td>Usar <code>new Function</code> com código de projeto</td><td>Segurança, CSP, depuração e empacotamento</td><td>Tratar como código confiável no protótipo; migrar para pipeline de módulos compilados e mapas de fonte</td></tr>
+<tr><td>Guardar fontes como variáveis</td><td>Problemas de edição, exportação e versionamento</td><td>Recurso de script de primeira classe com IDs e migração</td></tr>
+<tr><td>Dependência do código upstream</td><td>Fork difícil de atualizar</td><td>Componentes isolados, PRs pequenos e documentação de compatibilidade</td></tr>
+<tr><td>UI pesada</td><td>Perda de FPS e alto consumo de RAM</td><td>Lazy loading de Monaco, limite de painéis e medição de memória</td></tr>
+<tr><td>Dois modelos de programação</td><td>Ordem de execução ambígua</td><td>Definir fases do loop e interop explicitamente</td></tr>
+</tbody></table></div>
+<div class="note check"><b>Decisão de prioridade:</b> primeiro fazer o modo Código funcionar de ponta a ponta com um robô. Só depois ampliar a interface para novos workspaces, componentes e debugger avançado.</div>
+</section>
+<section id="pendencias" class="panel"><div class="row"><h2 style="margin:0">09. Checklist de implementação</h2><span class="small" id="progress-text">0 de 12 marcados</span></div>
+<p class="small">Marque tarefas durante sua gestão do projeto. As marcações são pessoais, salvas apenas neste navegador e <b>não</b> alteram o status oficial do GitHub.</p>
+<div class="progress" role="progressbar" aria-label="Itens marcados" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progress"><i></i></div><div style="height:12px"></div>
+<div class="checklist" id="checklist">
+<label><input type="checkbox" data-task="01"><span>Validar Flow, ESLint e compilação real da aba Script JS.</span></label>
+<label><input type="checkbox" data-task="02"><span>Validar script do robô funcionando sem Eventos, no Windows.</span></label>
+<label><input type="checkbox" data-task="03"><span>Confirmar salvar/reabrir e cancelar/desfazer.</span></label>
+<label><input type="checkbox" data-task="04"><span>Testar estado independente entre instâncias.</span></label>
+<label><input type="checkbox" data-task="05"><span>Criar Script Resource Manager e arquivos JS versionáveis.</span></label>
+<label><input type="checkbox" data-task="06"><span>Implementar ciclo de vida com teardown e tratamento de erros.</span></label>
+<label><input type="checkbox" data-task="07"><span>Criar aba Monaco completa e explorador de scripts.</span></label>
+<label><input type="checkbox" data-task="08"><span>Implementar múltiplos scripts/componentes por objeto.</span></label>
+<label><input type="checkbox" data-task="09"><span>Criar Inspetor com propriedades expostas e edição segura.</span></label>
+<label><input type="checkbox" data-task="10"><span>Adicionar IntelliSense, debugger e console.</span></label>
+<label><input type="checkbox" data-task="11"><span>Validar exportação, compatibilidade e benchmark.</span></label>
+<label><input type="checkbox" data-task="12"><span>Publicar release com manuais pt-BR e changelog.</span></label>
+</div><p><button type="button" id="reset" style="border:1px solid var(--border);border-radius:9px;padding:8px 13px;color:var(--ink);background:var(--panel2);cursor:pointer">Limpar minhas marcações</button></p>
+</section>
+<section id="creditos" class="panel"><h2>10. Repositório, documentação e créditos</h2>
+<p><b>Projeto:</b> WMK Game Studio — evolução do fork GDevelop. <b>Repositório:</b> <a href="https://github.com/WalneyNF/GDevelop" target="_blank" rel="noopener noreferrer">github.com/WalneyNF/GDevelop</a>. <b>Protótipo:</b> <a href="https://github.com/WalneyNF/GDevelop/pull/1" target="_blank" rel="noopener noreferrer">Pull Request #1</a>.</p>
+<p><b>Referências:</b> <a href="https://wiki.gdevelop.io/" target="_blank" rel="noopener noreferrer">documentação GDevelop</a> · <a href="https://microsoft.github.io/monaco-editor/" target="_blank" rel="noopener noreferrer">Monaco Editor</a> · <a href="https://github.com/4ian/GDevelop" target="_blank" rel="noopener noreferrer">repositório original GDevelop</a>.</p>
+<p><b>Créditos WMK:</b> Walney Moreira Klein — <a href="mailto:walneyk@hotmail.com">walneyk@hotmail.com</a>.</p>
+<p><b>Direitos dos autores originais:</b> manter avisos de copyright, licenças, créditos e atribuições aplicáveis do GDevelop e dependências. Este roadmap não altera nem substitui as respectivas licenças.</p>
+<p class="small">Roadmap inicial: 12 de novembro de 2026. Documento de planejamento; funcionalidades planejadas não devem ser anunciadas como concluídas antes dos testes.</p>
+</section>
+</main></div>
+<footer><div class="shell"><b>WMK Game Studio</b> · Unity na organização, Godot na flexibilidade, Monaco no código e GDJS no motor. <span style="float:right">Walney Moreira Klein — walneyk@hotmail.com</span></div></footer>
+<script>
+(function(){
+ const filterButtons=[...document.querySelectorAll('[data-filter]')], versions=[...document.querySelectorAll('.version')];
+ filterButtons.forEach(button=>button.addEventListener('click',()=>{
+   const category=button.dataset.filter;
+   filterButtons.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+   versions.forEach(v=>{v.hidden=category!=='all'&&v.dataset.category!==category;});
+ }));
+ const tasks=[...document.querySelectorAll('[data-task]')];
+ const storageKey='wmk-game-studio-roadmap-checklist-v1';
+ let stored={};try{stored=JSON.parse(localStorage.getItem(storageKey)||'{}')||{};}catch(e){}
+ tasks.forEach(task=>{task.checked=Boolean(stored[task.dataset.task]);task.addEventListener('change',()=>{
+   stored[task.dataset.task]=task.checked;
+   try{localStorage.setItem(storageKey,JSON.stringify(stored));}catch(e){}
+   update();
+ });});
+ function update(){const checked=tasks.filter(t=>t.checked).length, percent=Math.round(checked/tasks.length*100);
+ document.getElementById('progress-text').textContent=checked+' de '+tasks.length+' marcados ('+percent+'%)';
+ const bar=document.getElementById('progress');bar.setAttribute('aria-valuenow',String(percent));bar.firstElementChild.style.width=percent+'%';}
+ document.getElementById('reset').addEventListener('click',()=>{tasks.forEach(t=>t.checked=false);stored={};try{localStorage.removeItem(storageKey);}catch(e){}update();});
+ update();
+})();
+</script>
+</body></html>

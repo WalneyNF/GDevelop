@@ -324,6 +324,11 @@ namespace gdjs {
 
     //Variables:
     protected _variables: gdjs.VariablesContainer;
+    /** WMK JavaScript instance lifecycle, compiled from an attached object script. */
+    private _wmkJavaScript: {
+      start?: () => void;
+      update?: (dt: number) => void;
+    } | null = null;
 
     //Effects:
     protected _rendererEffects: Record<string, gdjs.PixiFiltersTools.Filter> =
@@ -418,6 +423,8 @@ namespace gdjs {
      * (`RuntimeObject.prototype.onCreated.call(this);`).
      */
     onCreated(): void {
+      // Execute the user-attached script only after the sprite/object is fully created.
+      this._wmkStartAttachedScript();
       const rendererObject = this.getRendererObject();
       if (rendererObject) {
         for (const effectName in this._rendererEffects) {
@@ -440,6 +447,51 @@ namespace gdjs {
         } else {
           behavior.onCreated();
         }
+      }
+    }
+
+    /**
+     * Load the WMK JavaScript source stored in the object's project variables.
+     * A separate lifecycle closure is instantiated for each object instance.
+     *
+     * Like other JavaScript events, attached scripts are trusted game code.
+     */
+    private _wmkStartAttachedScript(): void {
+      this._wmkJavaScript = null;
+      const sourceName = '__WMK_JAVASCRIPT_SOURCE';
+      if (!this._variables.has(sourceName)) return;
+
+      const source = this._variables.get(sourceName).getAsString();
+      if (!source.trim()) return;
+
+      try {
+        const runtimeScene = this._runtimeScene.getScene();
+        const factory = new Function(
+          'object',
+          'runtimeScene',
+          'gdjs',
+          source +
+            '\nreturn { start: typeof start === "function" ? start : undefined,' +
+            ' update: typeof update === "function" ? update : undefined };'
+        );
+        this._wmkJavaScript = factory(this, runtimeScene, gdjs);
+        if (this._wmkJavaScript && this._wmkJavaScript.start) {
+          this._wmkJavaScript.start.call(this);
+        }
+      } catch (error) {
+        console.error('WMK JavaScript: error starting ' + this.name, error);
+        this._wmkJavaScript = null;
+      }
+    }
+
+    private _wmkUpdateAttachedScript(dt: number): void {
+      if (!this._wmkJavaScript || !this._wmkJavaScript.update) return;
+      try {
+        this._wmkJavaScript.update.call(this, dt);
+      } catch (error) {
+        console.error('WMK JavaScript: error updating ' + this.name, error);
+        // Prevent log flooding if script fails every frame.
+        this._wmkJavaScript = null;
       }
     }
 
@@ -2227,6 +2279,9 @@ namespace gdjs {
     stepBehaviorsPreEvents(
       instanceContainer: gdjs.RuntimeInstanceContainer
     ): void {
+      this._wmkUpdateAttachedScript(
+        instanceContainer.getScene().getTimeManager().getElapsedTime() / 1000
+      );
       for (let i = 0, len = this._behaviors.length; i < len; ++i) {
         this._behaviors[i].stepPreEvents(instanceContainer);
       }
