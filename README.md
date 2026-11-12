@@ -11,9 +11,9 @@
 **Autor das modificações WMK:** Walney Moreira Klein — [walneyk@hotmail.com](mailto:walneyk@hotmail.com).  
 **Projeto de origem:** [GDevelop](https://github.com/4ian/GDevelop), criado por **Florian Rival** e desenvolvido com a comunidade. Os direitos, nomes, marcas, licenças e créditos originais são preservados.
 
-[![Repositório WMK](https://img.shields.io/badge/Fork-WalneyNF%2FGDevelop-8a9cff?logo=github)](https://github.com/WalneyNF/GDevelop)
+[![Repositório WMK](https://img.shields.io/badge/Fork-WalneyNF%2FWMK-Game-Studio-8a9cff?logo=github)](https://github.com/WalneyNF/WMK-Game-Studio)
 [![Documentação](https://img.shields.io/badge/Roadmap-HTML-50d6cc)](roadmap.html)
-[![Experimental](https://img.shields.io/badge/Modo%20JS-Experimental-ffca72)](https://github.com/WalneyNF/GDevelop/pull/1)
+[![Experimental](https://img.shields.io/badge/Modo%20JS-Experimental-ffca72)](https://github.com/WalneyNF/WMK-Game-Studio/pull/1)
 
 ## Índice
 
@@ -64,7 +64,7 @@ O foco de desenvolvimento é a **abertura do código-fonte**, a **documentação
 
 ## O que já foi modificado
 
-As modificações abaixo estão na branch experimental **[`wmk-js-object-editor-v1`](https://github.com/WalneyNF/GDevelop/tree/wmk-js-object-editor-v1)**, discutidas no [Pull Request #1](https://github.com/WalneyNF/GDevelop/pull/1). Elas **não foram incorporadas automaticamente à branch `master`**.
+As modificações abaixo estão na branch experimental **[`wmk-js-object-editor-v1`](https://github.com/WalneyNF/WMK-Game-Studio/tree/wmk-js-object-editor-v1)**, discutidas no [Pull Request #1](https://github.com/WalneyNF/WMK-Game-Studio/pull/1). Elas **não foram incorporadas automaticamente à branch `master`**.
 
 | Item | Situação | Local |
 | --- | --- | --- |
@@ -98,8 +98,8 @@ Editor de cenas
 
 **Não use a versão experimental como único ambiente para um projeto importante. Faça backup do projeto antes dos testes.**
 
-1. Abra o [Pull Request #1](https://github.com/WalneyNF/GDevelop/pull/1) e confira os testes do commit.
-2. Acesse [Actions do fork](https://github.com/WalneyNF/GDevelop/actions) e selecione **WMK JS Studio - Build Windows Experimental**.
+1. Abra o [Pull Request #1](https://github.com/WalneyNF/WMK-Game-Studio/pull/1) e confira os testes do commit.
+2. Acesse [Actions do fork](https://github.com/WalneyNF/WMK-Game-Studio/actions) e selecione **WMK JS Studio - Build Windows Experimental**.
 3. **Somente se o build terminar com sucesso**, baixe o artefato `WMK-JavaScript-Studio-Windows-Experimental`.
 4. Extraia o pacote ou execute o instalador, conforme os arquivos efetivamente gerados. Preferencialmente mantenha a instalação anterior intacta.
 5. Abra uma cópia do projeto **WMK Robo Aventureiro**, selecione `spr_robo` e abra sua aba **Script JS**.
@@ -208,12 +208,12 @@ O fork contém workflows para compilação Windows e validação de código:
 - [`wmk-js-windows.yml`](.github/workflows/wmk-js-windows.yml) — build experimental da branch WMK JavaScript.
 - [`wmk-js-validation.yml`](.github/workflows/wmk-js-validation.yml) — tipos, lint e testes WMK.
 
-Consulte as [execuções reais do GitHub Actions](https://github.com/WalneyNF/GDevelop/actions) e seus logs. **O sucesso do build não substitui um teste manual no aplicativo.**
+Consulte as [execuções reais do GitHub Actions](https://github.com/WalneyNF/WMK-Game-Studio/actions) e seus logs. **O sucesso do build não substitui um teste manual no aplicativo.**
 
 ### Opção B — Desenvolvimento local
 
 ```bash
-git clone https://github.com/WalneyNF/GDevelop.git
+git clone https://github.com/WalneyNF/WMK-Game-Studio.git
 cd GDevelop
 git switch wmk-js-object-editor-v1
 cd newIDE/app
@@ -273,7 +273,7 @@ Ao contribuir:
 5. Documente a funcionalidade em português do Brasil.
 6. Não marque como finalizados recursos não compilados ou não testados.
 
-Veja [as alterações em discussão no PR #1](https://github.com/WalneyNF/GDevelop/pull/1) e [o roadmap](roadmap.html).
+Veja [as alterações em discussão no PR #1](https://github.com/WalneyNF/WMK-Game-Studio/pull/1) e [o roadmap](roadmap.html).
 
 **Segurança:** scripts JavaScript são **código executável confiável**, não um ambiente isolado de execução de conteúdo desconhecido. Evite importar projetos/scripts de fontes não confiáveis, principalmente no editor desktop.
 
