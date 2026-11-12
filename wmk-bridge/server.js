@@ -134,6 +134,91 @@ async function api(req, res) {
       mcpConfigured:!!MCP_TOKEN, writeEnabled:WRITE_ENABLED});
   if (pathname === '/api/v1/tools' && req.method === 'GET')
     return json(res, 200, {tools:await tools()});
+  if (pathname === '/api/v1/endpoints' && req.method === 'GET') {
+    const list = await tools();
+    return json(res,200,{
+      count:list.length,
+      note:'Cada ferramenta anunciada pelo GDevelop MCP pode ser chamada por HTTP. A quantidade depende da versão instalada.',
+      endpoints:list.map(tool=>({
+        method:'POST',
+        path:'/api/v1/endpoints/'+encodeURIComponent(tool.name),
+        name:tool.name,
+        description:tool.description || '',
+        readOnly:tool.annotations?.readOnlyHint===true,
+        inputSchema:tool.inputSchema || null,
+      })),
+    });
+  }
+  if(pathname.startsWith('/api/v1/endpoints/')){
+    const name = decodeURIComponent(pathname.slice('/api/v1/endpoints/'.length));
+    const tool = (await tools()).find(item=>item.name===name);
+    if(!tool)throw fail(404,'Ferramenta MCP não encontrada.');
+    if(req.method==='GET')return json(res,200,{
+      name:tool.name,description:tool.description||'',inputSchema:tool.inputSchema||null,
+      readOnly:tool.annotations?.readOnlyHint===true,
+      method:'POST',path:'/api/v1/endpoints/'+encodeURIComponent(tool.name),
+    });
+    if(req.method==='POST'){
+      if(!WRITE_ENABLED && tool.annotations?.readOnlyHint!==true)
+        throw fail(403,'Escrita desabilitada ou ferramenta não declarada readOnly.');
+      const argumentsJson=await bodyAsJson(req);
+      if(!argumentsJson || typeof argumentsJson!=='object' || Array.isArray(argumentsJson))
+        throw fail(400,'O corpo deve ser objeto JSON de parâmetros.');
+      return json(res,200,{name:tool.name,result:await mcp('tools/call',{name:tool.name,arguments:argumentsJson})});
+    }
+  }
+  if(pathname==='/api/v1/batch' && req.method==='POST'){
+    const payload=await bodyAsJson(req);
+    if(!payload || !Array.isArray(payload.calls) || payload.calls.length===0 || payload.calls.length>30)
+      throw fail(400,'Envie calls com 1 a 30 operações.');
+    const available=await tools();
+    const prepared=payload.calls.map((entry,i)=>{
+      if(!entry || typeof entry.name!=='string' || !entry.arguments ||
+        typeof entry.arguments!=='object' || Array.isArray(entry.arguments))
+        throw fail(400,'Operação '+i+' inválida.');
+      const tool=available.find(t=>t.name===entry.name);
+      if(!tool)throw fail(404,'Operação '+entry.name+' indisponível.');
+      if(!WRITE_ENABLED && tool.annotations?.readOnlyHint!==true)
+        throw fail(403,'Escrita desabilitada: '+entry.name);
+      return entry;
+    });
+    // Sequencial para preservar dependências; não há rollback transacional.
+    const results=[];
+    for(const entry of prepared){
+      try{
+        const result=await mcp('tools/call',{name:entry.name,arguments:entry.arguments});
+        results.push({name:entry.name,ok:!result?.isError,result});
+        if(result?.isError && payload.stopOnError!==false)break;
+      }catch(error){
+        results.push({name:entry.name,ok:false,error:error.message});
+        if(payload.stopOnError!==false)break;
+      }
+    }
+    return json(res,200,{executed:results.length,total:prepared.length,results,transactional:false});
+  }
+  if(pathname==='/api/v1/openapi.json' && req.method==='GET'){
+    const available=await tools();
+    const paths={
+      '/api/v1/health':{get:{summary:'Estado da ponte',responses:{'200':{description:'Estado'}}}},
+      '/api/v1/endpoints':{get:{summary:'Catálogo de operações disponíveis',responses:{'200':{description:'Ferramentas disponíveis'}}}},
+      '/api/v1/batch':{post:{summary:'Executa até 30 operações sequencialmente; sem rollback',responses:{'200':{description:'Resultados'}}}},
+    };
+    for(const tool of available){
+      paths['/api/v1/endpoints/'+encodeURIComponent(tool.name)]={
+        get:{summary:tool.description||tool.name,responses:{'200':{description:'Definição'}}},
+        post:{
+          summary:tool.description||tool.name,
+          operationId:tool.name,
+          requestBody:{required:true,content:{'application/json':{schema:tool.inputSchema||{type:'object'}}}},
+          responses:{'200':{description:'Resultado da execução'}}
+        }
+      };
+    }
+    return json(res,200,{openapi:'3.0.3',info:{title:'WMK Game Studio API',version:'0.1.0',
+      description:'Catálogo dinâmico dos recursos MCP realmente disponíveis no editor. Todas as operações exigem Bearer token.'},
+      servers:[{url:'http://127.0.0.1:'+PORT}],security:[{bearerAuth:[]}],
+      components:{securitySchemes:{bearerAuth:{type:'http',scheme:'bearer'}}},paths});
+  }
   if (pathname === '/api/v1/call' && req.method === 'POST') {
     const payload = await bodyAsJson(req);
     if (!payload || typeof payload.name !== 'string' || !payload.name || typeof payload.arguments !== 'object' ||
