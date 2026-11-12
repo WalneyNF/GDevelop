@@ -122,6 +122,15 @@ async function api(req, res) {
   }
   if (req.method === 'OPTIONS') {res.writeHead(204);res.end();return;}
   const pathname = new URL(req.url || '/', 'http://127.0.0.1').pathname;
+  if (pathname === '/demo-game-data' && req.method === 'GET') {
+    const page = fs.readFileSync(path.join(__dirname,'demo-game-data.html'));
+    res.writeHead(200,{
+      'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store',
+      'Content-Security-Policy':"default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'",
+      'X-Content-Type-Options':'nosniff',
+    });
+    res.end(page); return;
+  }
   if (pathname === '/manual-game-data' && req.method === 'GET') {
     const page = fs.readFileSync(path.join(__dirname,'manual-game-data.html'));
     res.writeHead(200,{
