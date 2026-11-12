@@ -50,7 +50,7 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Lint dos arquivos alterados
         working-directory: newIDE/app
-        run: npx eslint src/ObjectEditor/ObjectJavaScriptEditor.js src/ObjectEditor/ObjectEditorDialog.js
+        run: npx eslint src/ObjectEditor/ObjectJavaScriptEditor.js src/ObjectEditor/ObjectEditorDialog.js src/ObjectsList/ObjectTreeViewItemContent.js
       - name: Verificar tipos Flow
         working-directory: newIDE/app
         run: npm run flow -- --show-all-errors
