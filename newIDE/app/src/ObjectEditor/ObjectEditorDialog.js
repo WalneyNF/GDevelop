@@ -458,7 +458,7 @@ function update(dt) {
           ) : (
             <ObjectJavaScriptEditor
               objectName={objectName}
-              value={scriptSource}
+              value={scriptSource || ''}
               onChange={changeScriptSource}
             />
           )}
