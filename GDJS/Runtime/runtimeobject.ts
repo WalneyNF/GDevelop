@@ -328,6 +328,7 @@ namespace gdjs {
     private _wmkJavaScript: {
       start?: () => void;
       update?: (dt: number) => void;
+      onDestroy?: () => void;
     } | null = null;
 
     //Effects:
@@ -472,14 +473,22 @@ namespace gdjs {
           'gdjs',
           source +
             '\nreturn { start: typeof start === "function" ? start : undefined,' +
-            ' update: typeof update === "function" ? update : undefined };'
+            ' update: typeof update === "function" ? update : undefined,' +
+            ' onDestroy: typeof onDestroy === "function" ? onDestroy : undefined };' +
+            '\n//# sourceURL=wmk-scripts/' +
+            encodeURIComponent(this.name) +
+            '.js'
         );
         this._wmkJavaScript = factory(this, runtimeScene, gdjs);
         if (this._wmkJavaScript && this._wmkJavaScript.start) {
           this._wmkJavaScript.start.call(this);
         }
       } catch (error) {
-        console.error('WMK JavaScript: error starting ' + this.name, error);
+        console.error(
+          'WMK JavaScript: start ' + this.name + ' #' + this.id +
+            ' [wmk-scripts/' + this.name + '.js]',
+          error
+        );
         this._wmkJavaScript = null;
       }
     }
@@ -489,7 +498,11 @@ namespace gdjs {
       try {
         this._wmkJavaScript.update.call(this, dt);
       } catch (error) {
-        console.error('WMK JavaScript: error updating ' + this.name, error);
+        console.error(
+          'WMK JavaScript: update ' + this.name + ' #' + this.id +
+            ' [wmk-scripts/' + this.name + '.js]',
+          error
+        );
         // Prevent log flooding if script fails every frame.
         this._wmkJavaScript = null;
       }
@@ -877,6 +890,18 @@ namespace gdjs {
      * (`super.onDeletedFromScene();`).
      */
     onDeletedFromScene(): void {
+      const script = this._wmkJavaScript;
+      this._wmkJavaScript = null;
+      if (script && script.onDestroy) {
+        try {
+          script.onDestroy.call(this);
+        } catch (error) {
+          console.error(
+            'WMK JavaScript: onDestroy ' + this.name + ' #' + this.id,
+            error
+          );
+        }
+      }
       const theLayer = this._runtimeScene.getLayer(this.layer);
       const rendererObject = this.getRendererObject();
       if (rendererObject) {
