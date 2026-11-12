@@ -301,6 +301,18 @@ O GDevelop é um editor de jogos **livre e de código aberto** com ferramentas p
 
 O GDevelop original possui seus próprios [roadmap](https://trello.com/b/qf0lM7k8/gdevelop-roadmap), [issues](https://github.com/4ian/GDevelop/issues) e [discussões](https://github.com/4ian/GDevelop/discussions), independentes das prioridades do fork WMK.
 
+## WMK Game Lab — experimentos externos
+
+Abra `http://127.0.0.1:8767/game-lab` com a ponte iniciada. O laboratório oferece:
+
+- **Receitas JSON** importáveis/exportáveis, com validação e execução sequencial confirmada.
+- **Catálogo de ferramentas MCP** disponíveis no editor aberto (quando MCP estiver habilitado).
+- **Consultas e testes de gravação em JSON/SQLite**, leitura de backend e estatísticas.
+- **Histórico de resultados na sessão**, sem persistência de tokens no navegador.
+- **Teste de segurança HTTP** para isolamento de chaves, incluindo tentativas de acesso proibido.
+
+Arquivos: [site HTML](wmk-bridge/game-lab.html), [teste HTTP](wmk-bridge/tests/http-bridge.test.js), [roadmap](roadmap.html). Esta é uma interface experimental **apenas localhost**. Executar receitas que alterem o projeto exige configurar MCP no editor, habilitar escrita na ponte e fazer backup.
+
 ## WMK Game Data — banco para os seus jogos
 
 O fork oferece uma **API local experimental** para guardar e consultar dados de jogos em **JSON ou SQLite**, sem precisar escrever SQL no código do jogo.
