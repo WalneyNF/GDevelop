@@ -197,6 +197,20 @@ export default class Robo extends WMK.Component {
 <p><b>Direitos dos autores originais:</b> manter avisos de copyright, licenças, créditos e atribuições aplicáveis do GDevelop e dependências. Este roadmap não altera nem substitui as respectivas licenças.</p>
 <p class="small">Roadmap inicial: 12 de novembro de 2026. Documento de planejamento; funcionalidades planejadas não devem ser anunciadas como concluídas antes dos testes.</p>
 </section>
+<section id="dados-jogos" class="panel">
+<h2>WMK Game Data — JSON e SQLite</h2>
+<p>Camada de persistência independente do editor e do runtime GDJS. Um site externo ou jogo pode consultar, criar e alterar registros usando a mesma API REST, com backend JSON ou SQLite selecionado por jogo. O uso público exige backend adicional, autenticação de jogadores e validações antifraude.</p>
+<table><thead><tr><th>Recurso</th><th>Situação</th><th>Próximo critério</th></tr></thead><tbody>
+<tr><td>JSON e CRUD HTTP</td><td>Implementado, testes automatizados</td><td>Validar ponta a ponta em Windows</td></tr>
+<tr><td>SQLite por jogo</td><td>Implementado em Node.js 24, testes automatizados</td><td>Validar persistência e instalação real</td></tr>
+<tr><td>Chaves individuais por jogo</td><td>Implementadas com escopos read/write e revogação</td><td>Testes HTTP de isolamento, rate limit e auditoria</td></tr>
+<tr><td>Manual em português</td><td>Disponível</td><td>Exemplo jogável de pontuação/inventário</td></tr>
+<tr><td>Migração com backup</td><td>Planejada</td><td>Exportar/importar registros com teste de integridade</td></tr>
+<tr><td>Usuários, permissões e ranking antifraude</td><td>Planejados</td><td>Backend seguro para jogos públicos</td></tr>
+</tbody></table>
+<p><a href="wmk-bridge/manual-game-data.html">Abrir manual HTML de bancos de dados JSON e SQLite</a> · <a href="wmk-bridge/painel.html">API Explorer</a> · <a href="wmk-bridge/tests/game-data.test.js">Testes</a></p>
+<p><b>Princípio de segurança:</b> jamais incorporar a chave administrativa ou a chave secreta de um jogo em arquivos de jogos exportados, HTML público ou GitHub Pages. Uma API pública exige serviço intermediário com autenticação por jogador.</p>
+</section>
 </main></div>
 <footer><div class="shell"><b>WMK Game Studio</b> · Unity na organização, Godot na flexibilidade, Monaco no código e GDJS no motor. <span style="float:right">Walney Moreira Klein — walneyk@hotmail.com</span></div></footer>
 <script>
