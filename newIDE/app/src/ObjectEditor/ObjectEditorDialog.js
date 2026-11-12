@@ -140,11 +140,27 @@ const InnerDialog = (props: InnerDialogProps) => {
   const [scriptSource, setScriptSource] = React.useState<?string>(readScript);
   const attachScript = () => {
     const initialSource = `// ${objectName}.js — WMK JavaScript Studio
-// O script esta salvo no objeto. Execucao automatica: em desenvolvimento.
+// O script e executado automaticamente para cada instancia.
+// "object" e este objeto, "runtimeScene" e a cena atual.
+// Use dt (segundos) para movimento independente do FPS.
+let velocidade = 180;
 function start() {
+  console.log('WMK JavaScript iniciado:', object.getName());
 }
 
 function update(dt) {
+  if (gdjs.evtTools.input.isKeyPressed(runtimeScene, 'Right')) {
+    object.setX(object.getX() + velocidade * dt);
+  }
+  if (gdjs.evtTools.input.isKeyPressed(runtimeScene, 'Left')) {
+    object.setX(object.getX() - velocidade * dt);
+  }
+  if (gdjs.evtTools.input.isKeyPressed(runtimeScene, 'Up')) {
+    object.setY(object.getY() - velocidade * dt);
+  }
+  if (gdjs.evtTools.input.isKeyPressed(runtimeScene, 'Down')) {
+    object.setY(object.getY() + velocidade * dt);
+  }
 }
 `;
     const variables = object.getVariables();
