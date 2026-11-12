@@ -434,6 +434,13 @@ export class ObjectTreeViewItemContent implements TreeViewItemContent {
         click: () => onEditObject(object),
       },
       {
+        label: object.getVariables().has('__WMK_JAVASCRIPT_SOURCE')
+          ? 'WMK: Abrir Script JS'
+          : 'WMK: Anexar Script JS',
+        click: () => onEditObject(object, 'script'),
+        enabled: !isListLocked,
+      },
+      {
         label: i18n._(t`Edit object variables`),
         click: () => onEditObject(object, 'variables'),
       },
@@ -564,7 +571,30 @@ export class ObjectTreeViewItemContent implements TreeViewItemContent {
   }
 
   renderRightComponent(i18n: I18nType): ?React.Node {
-    return null;
+    const object = this._getAliveObject();
+    if (
+      !object ||
+      !object.getVariables().has('__WMK_JAVASCRIPT_SOURCE')
+    ) {
+      return null;
+    }
+    // Show a small JS marker directly in the object tree.
+    return (
+      <span
+        title="WMK: este objeto possui JavaScript anexado"
+        style={{
+          fontSize: 10,
+          color: '#86d0ff',
+          border: '1px solid #477296',
+          borderRadius: 3,
+          padding: '0 4px',
+          marginLeft: 4,
+          fontWeight: 'bold',
+        }}
+      >
+        JS
+      </span>
+    );
   }
 
   delete(): void {
