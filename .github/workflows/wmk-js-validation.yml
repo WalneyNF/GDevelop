@@ -1,0 +1,56 @@
+name: WMK JS Studio - Validar Codigo
+
+on:
+  push:
+    branches:
+      - wmk-js-object-editor-v1
+  pull_request:
+    paths:
+      - 'GDJS/Runtime/**'
+      - 'GDJS/tests/tests/wmk-attached-javascript.js'
+      - 'newIDE/app/src/ObjectEditor/**'
+      - '.github/workflows/wmk-js-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  gdjs-types:
+    name: TypeScript do motor GDJS
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Instalar dependencias GDJS
+        working-directory: GDJS
+        run: npm ci --no-audit --no-fund
+      - name: Verificar tipos do runtime
+        working-directory: GDJS
+        run: npm run check-types
+      - name: Verificar sintaxe dos testes WMK
+        run: node --check GDJS/tests/tests/wmk-attached-javascript.js
+
+  ide-checks:
+    name: Sintaxe e tipagem do editor
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: 'false'
+      NODE_OPTIONS: '--max-old-space-size=6144'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Instalar dependencias da IDE
+        working-directory: newIDE/app
+        run: npm ci --no-audit --no-fund
+      - name: Lint dos arquivos alterados
+        working-directory: newIDE/app
+        run: npx eslint src/ObjectEditor/ObjectJavaScriptEditor.js src/ObjectEditor/ObjectEditorDialog.js
+      - name: Verificar tipos Flow
+        working-directory: newIDE/app
+        run: npm run flow -- --show-all-errors
