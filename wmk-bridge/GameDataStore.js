@@ -10,7 +10,7 @@ function createJsonGameStore(directory) {
   fs.mkdirSync(root, {recursive: true});
   const validName = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,64}$/.test(value);
   const ensureName = (value, label) => {
-    if (!validName(value)) {
+    if (!validName(value) || ['__proto__','constructor','prototype'].includes(value)) {
       const error = new Error(label + ' inválido. Use letras, números, - ou _.');
       error.status = 400;
       throw error;
@@ -22,7 +22,7 @@ function createJsonGameStore(directory) {
     const filepath = file(game);
     try {
       const data = JSON.parse(fs.readFileSync(filepath, 'utf8'));
-      if (!data || data.version !== 1 || typeof data.collections !== 'object' || Array.isArray(data.collections))
+      if (!data || data.version !== 1 || !data.collections || typeof data.collections !== 'object' || Array.isArray(data.collections))
         throw new Error('Formato de arquivo inválido.');
       return data;
     } catch(error) {
@@ -49,7 +49,10 @@ function createJsonGameStore(directory) {
   const records = (game, collection) => {
     ensureName(collection, 'Coleção');
     const data = load(game);
-    return {data, items: data.collections[collection] || []};
+    const items = Object.prototype.hasOwnProperty.call(data.collections, collection)
+      ? data.collections[collection] : [];
+    if (!Array.isArray(items)) throw Object.assign(new Error('Coleção inválida no armazenamento.'), {status:500});
+    return {data, items};
   };
   const listGames = () =>
     fs.readdirSync(root).filter(x=>/^[a-zA-Z0-9_-]{1,64}\.json$/.test(x))
@@ -75,6 +78,8 @@ function createJsonGameStore(directory) {
     const index=items.findIndex(row=>row.id===recordId);
     if(id && index===-1)throw Object.assign(new Error('Registro não encontrado.'),{status:404});
     const clean=JSON.parse(JSON.stringify(payload));
+    if (Object.keys(clean).some(key => ['__proto__','constructor','prototype'].includes(key)))
+      throw Object.assign(new Error('Campos reservados não permitidos.'), {status:400});
     delete clean.id; delete clean.createdAt; delete clean.updatedAt;
     const row={...clean,id:recordId,createdAt:index>=0?items[index].createdAt:now,updatedAt:now};
     if(index>=0)items[index]=row;else items.push(row);
