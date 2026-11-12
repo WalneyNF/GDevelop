@@ -8,10 +8,10 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
-const {createJsonGameStore} = require('./GameDataStore');
+const {createGameStoreManager} = require('./GameStoreManager');
 const {createGameKeyStore} = require('./GameKeyStore');
 const DATA_DIR = process.env.WMK_GAME_DATA_DIR || path.join(__dirname, 'data');
-const gameStore = createJsonGameStore(DATA_DIR);
+const gameStore = createGameStoreManager(DATA_DIR);
 const gameKeys = createGameKeyStore(DATA_DIR);
 
 const PORT = Number(process.env.WMK_BRIDGE_PORT || '8767');
@@ -137,7 +137,7 @@ async function api(req, res) {
   const gameIdMatch = /^\/api\/v1\/games\/([A-Za-z0-9_-]{1,64})(?:\/|$)/.exec(pathname);
   const keyToken = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || ''));
   const needsWrite = ['POST','PUT','PATCH','DELETE'].includes(req.method);
-  const adminKeyRoute = !!/^\/api\/v1\/games\/[A-Za-z0-9_-]{1,64}\/keys(?:\/|$)/.test(pathname);
+  const adminKeyRoute = !!/^\/api\/v1\/games\/[A-Za-z0-9_-]{1,64}\/(?:keys|storage)(?:\/|$)/.test(pathname);
   const gameAuthorized = !admin && !!gameIdMatch && !adminKeyRoute &&
     gameKeys.verify(gameIdMatch[1],keyToken ? keyToken[1].trim() : '',needsWrite);
   if (!admin && !gameAuthorized)
@@ -150,6 +150,19 @@ async function api(req, res) {
   const gameDataMatch = /^\/api\/v1\/games\/([A-Za-z0-9_-]{1,64})(?:\/([A-Za-z0-9_-]{1,64}))?(?:\/([A-Za-z0-9_-]{1,64}))?$/.exec(pathname);
   if (pathname === '/api/v1/games' && req.method === 'GET')
     return json(res,200,{games:gameStore.listGames()});
+  // Configuração administrativa do banco de cada jogo. Nunca exposta a chaves de jogo.
+  const storageRoute = /^\/api\/v1\/games\/([A-Za-z0-9_-]{1,64})\/storage$/.exec(pathname);
+  if (storageRoute) {
+    if (!admin) throw fail(403,'Somente administrador configura armazenamento.');
+    const game=storageRoute[1];
+    if(req.method==='GET')return json(res,200,gameStore.getConfig(game));
+    if(req.method==='PUT'){
+      if(!WRITE_ENABLED)throw fail(403,'Escrita administrativa desabilitada.');
+      const body=await bodyAsJson(req);
+      return json(res,200,gameStore.setConfig(game,body.backend));
+    }
+    throw fail(405,'Método não permitido.');
+  }
   // Gestão de chaves: SOMENTE administrador; retorno da chave apenas no momento da criação.
   const keysRoute = /^\/api\/v1\/games\/([A-Za-z0-9_-]{1,64})\/keys(?:\/([0-9a-fA-F-]{36}))?$/.exec(pathname);
   if (keysRoute) {
@@ -263,6 +276,10 @@ async function api(req, res) {
       '/api/v1/health':{get:{summary:'Estado da ponte',responses:{'200':{description:'Estado'}}}},
       '/api/v1/endpoints':{get:{summary:'Catálogo de operações disponíveis',responses:{'200':{description:'Ferramentas disponíveis'}}}},
       '/api/v1/games':{get:{summary:'Lista bancos de dados de jogos locais',responses:{'200':{description:'IDs de jogos'}}}},
+      '/api/v1/games/{game}/storage':{
+        get:{summary:'Consulta backend JSON/SQLite (administrador)',responses:{'200':{description:'Backend atual'}}},
+        put:{summary:'Configura backend para jogo sem registros existentes (administrador)',responses:{'200':{description:'Configuração'}}}
+      },
       '/api/v1/games/{game}/keys':{
         get:{summary:'Lista chaves sem exibir segredos (administrador)',responses:{'200':{description:'Chaves'}}},
         post:{summary:'Cria chave por jogo, com escopo read/write (administrador)',responses:{'201':{description:'Segredo exibido uma única vez'}}}
