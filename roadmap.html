@@ -211,6 +211,20 @@ export default class Robo extends WMK.Component {
 <p><a href="wmk-bridge/manual-game-data.html">Abrir manual HTML de bancos de dados JSON e SQLite</a> · <a href="wmk-bridge/painel.html">API Explorer</a> · <a href="wmk-bridge/tests/game-data.test.js">Testes</a></p>
 <p><b>Princípio de segurança:</b> jamais incorporar a chave administrativa ou a chave secreta de um jogo em arquivos de jogos exportados, HTML público ou GitHub Pages. Uma API pública exige serviço intermediário com autenticação por jogador.</p>
 </section>
+<section id="game-lab" class="panel">
+<h2>WMK Game Lab — laboratório externo com receitas</h2>
+<p>Aplicação HTML local criada para testar a ponte HTTP do WMK Game Studio de forma repetível. O laboratório fica em <code>http://127.0.0.1:8767/game-lab</code>, sem dependências frontend. As ações de criação de cena/objeto dependem das ferramentas MCP que a versão do editor anunciar: não se presume que todas estejam disponíveis.</p>
+<table><thead><tr><th>Funcionalidade</th><th>Estado</th><th>Critério de aceitação</th></tr></thead><tbody>
+<tr><td>Interface HTML externa e credencial em memória</td><td>Implementado</td><td>Testar página servida localmente, sem acesso pela internet</td></tr>
+<tr><td>Receitas JSON importáveis/exportáveis</td><td>Implementado</td><td>Executar passos sequenciais, parando após erro, sem rollback automático</td></tr>
+<tr><td>Explorador MCP dinâmico</td><td>Implementado</td><td>Listar operações reais de um editor com MCP ativo</td></tr>
+<tr><td>Consultas e gravações JSON/SQLite</td><td>Implementado</td><td>Validar isolamento por jogo e estatísticas em testes HTTP</td></tr>
+<tr><td>Snapshots/rollback do projeto</td><td>Planejado</td><td>Backup verificado antes de mutações via MCP</td></tr>
+<tr><td>Receitas completas de criação de jogos</td><td>Planejado</td><td>Criar cena, objeto e script, executar e salvar via API</td></tr>
+<tr><td>Debugger e IA Ollama/Groq integrados</td><td>Planejado</td><td>Erros por arquivo/linha e geração de código revisável</td></tr>
+</tbody></table>
+<p><a href="wmk-bridge/game-lab.html">Código do Game Lab</a> · <a href="wmk-bridge/tests/http-bridge.test.js">Testes HTTP</a> · <a href="wmk-bridge/manual-game-data.html">Manual JSON/SQLite</a>.</p>
+</section>
 </main></div>
 <footer><div class="shell"><b>WMK Game Studio</b> · Unity na organização, Godot na flexibilidade, Monaco no código e GDJS no motor. <span style="float:right">Walney Moreira Klein — walneyk@hotmail.com</span></div></footer>
 <script>
