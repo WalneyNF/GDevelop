@@ -1,0 +1,68 @@
+name: WMK - Compilar GDevelop Windows
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 120
+    env:
+      CI: 'false'
+      GD_PORTABLE_BUILD: 'true'
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      NODE_OPTIONS: '--max-old-space-size=6144'
+    steps:
+      - name: Baixar codigo do fork
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Verificar estrutura
+        shell: pwsh
+        run: |
+          if (!(Test-Path 'newIDE/app/package.json')) { throw 'newIDE/app/package.json nao encontrado' }
+          if (!(Test-Path 'newIDE/electron-app/package.json')) { throw 'newIDE/electron-app/package.json nao encontrado' }
+          node --version
+          npm --version
+
+      - name: Instalar dependencias do editor
+        working-directory: newIDE/app
+        run: npm install --no-audit --no-fund
+
+      - name: Compilar interface do editor
+        working-directory: newIDE/app
+        run: npm run build
+
+      - name: Instalar dependencias Electron
+        working-directory: newIDE/electron-app
+        run: npm install --no-audit --no-fund
+
+      - name: Gerar distribuicao Windows portatil
+        working-directory: newIDE/electron-app
+        run: npm run build -- --publish never
+
+      - name: Listar artefatos gerados
+        shell: pwsh
+        run: |
+          if (!(Test-Path 'newIDE/electron-app/dist')) { throw 'Pasta dist nao foi gerada' }
+          Get-ChildItem 'newIDE/electron-app/dist' -File -Recurse |
+            Select-Object FullName, Length | Format-Table -AutoSize
+
+      - name: Disponibilizar arquivos compilados
+        uses: actions/upload-artifact@v4
+        with:
+          name: WMK-GDevelop-Windows
+          path: |
+            newIDE/electron-app/dist/*.zip
+            newIDE/electron-app/dist/*.exe
+          if-no-files-found: error
+          retention-days: 7
