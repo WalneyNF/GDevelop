@@ -10,7 +10,7 @@ type Props = {|
 
 /**
  * WMK JavaScript authoring panel.
- * Content is saved as an object variable; runtime integration is a separate task.
+ * Content is saved as an object variable; the runtime executes start/update.
  */
 export default function ObjectJavaScriptEditor({
   objectName,
@@ -47,7 +47,7 @@ export default function ObjectJavaScriptEditor({
       <div style={{ padding: '8px 12px', fontSize: 13 }}>
         <strong>WMK JavaScript — {objectName}.js</strong>
         <div style={{ marginTop: 4 }}>
-          Editor Monaco. Script armazenado no objeto; execução automática ainda não implementada.
+          Editor Monaco. start() e update(dt) executam no jogo; API experimental.
         </div>
       </div>
       <div ref={containerRef} style={{ flex: 1, minHeight: 340, width: '100%' }}>
