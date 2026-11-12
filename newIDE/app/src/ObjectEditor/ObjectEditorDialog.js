@@ -21,6 +21,7 @@ import HotReloadPreviewButton, {
 } from '../HotReload/HotReloadPreviewButton';
 import EffectsList from '../EffectsList';
 import VariablesList from '../VariablesList/VariablesList';
+import ObjectJavaScriptEditor from './ObjectJavaScriptEditor';
 import { sendBehaviorsEditorShown } from '../Utils/Analytics/EventSender';
 import useDismissableTutorialMessage from '../Hints/useDismissableTutorialMessage';
 import useAlertDialog from '../UI/Alert/useAlertDialog';
@@ -33,7 +34,8 @@ export type ObjectEditorTab =
   | 'properties'
   | 'behaviors'
   | 'variables'
-  | 'effects';
+  | 'effects'
+  | 'script';
 
 type Props = {|
   open: boolean,
@@ -128,6 +130,37 @@ const InnerDialog = (props: InnerDialogProps) => {
     initialTab || 'properties'
   );
   const [objectName, setObjectName] = React.useState(props.objectName);
+  const scriptVariableName = '__WMK_JAVASCRIPT_SOURCE';
+  const readScript = () => {
+    const variables = object.getVariables();
+    return variables.has(scriptVariableName)
+      ? variables.get(scriptVariableName).getString()
+      : null;
+  };
+  const [scriptSource, setScriptSource] = React.useState<?string>(readScript);
+  const attachScript = () => {
+    const initialSource = `// ${objectName}.js — WMK JavaScript Studio
+// O script esta salvo no objeto. Execucao automatica: em desenvolvimento.
+function start() {
+}
+
+function update(dt) {
+}
+`;
+    const variables = object.getVariables();
+    const scriptVariable = new gd.Variable();
+    scriptVariable.setString(initialSource);
+    variables.insert(scriptVariableName, scriptVariable, variables.count());
+    setScriptSource(initialSource);
+    notifyOfChange();
+  };
+  const changeScriptSource = (source: string) => {
+    const variables = object.getVariables();
+    if (!variables.has(scriptVariableName)) return;
+    variables.get(scriptVariableName).setString(source);
+    setScriptSource(source);
+    notifyOfChange();
+  };
   const forceUpdate = useForceUpdate();
 
   // Ensure variable UUIDs are set for changeset tracking. This must happen
@@ -302,6 +335,10 @@ const InnerDialog = (props: InnerDialogProps) => {
               label: <Trans>Variables</Trans>,
               value: 'variables',
             },
+            {
+              label: 'Script JS',
+              value: 'script',
+            },
             objectMetadata.hasDefaultBehavior(
               'EffectCapability::EffectBehavior'
             )
@@ -391,6 +428,25 @@ const InnerDialog = (props: InnerDialogProps) => {
           }}
           isListLocked={isBehaviorListLocked}
         />
+      )}
+      {currentTab === 'script' && (
+        <Column noMargin expand useFullHeight noOverflowParent>
+          {scriptSource === null ? (
+            <div style={{ padding: 24 }}>
+              <p>Este objeto ainda nao possui script JavaScript.</p>
+              <FlatButton
+                label="Anexar Script JS"
+                onClick={attachScript}
+              />
+            </div>
+          ) : (
+            <ObjectJavaScriptEditor
+              objectName={objectName}
+              value={scriptSource}
+              onChange={changeScriptSource}
+            />
+          )}
+        </Column>
       )}
       {currentTab === 'variables' && (
         <Column expand noMargin noOverflowParent>
