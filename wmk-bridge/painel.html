@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WMK Game Studio — API Explorer</title><style>
+:root{font:14px/1.5 system-ui,Segoe UI,sans-serif;color-scheme:dark;background:#0c1220;color:#eff5ff}
+*{box-sizing:border-box}body{margin:0}header{padding:18px 25px;background:#151f33;border-bottom:1px solid #30405e}
+h1{margin:0;color:#8fd9ef;font-size:25px}h2{margin:0 0 12px;font-size:18px}
+p,small{color:#b9c7db}.layout{display:grid;grid-template-columns:minmax(270px,33%) 1fr;min-height:calc(100vh - 100px)}
+aside{padding:18px;background:#10192b;border-right:1px solid #30405e;min-height:0}
+main{padding:20px;min-width:0}.group{background:#172339;border:1px solid #344963;padding:15px;border-radius:10px;margin:0 0 14px}
+label{display:block;margin-top:10px;margin-bottom:5px;color:#c8d8ed}
+input,textarea{width:100%;background:#0e192a;border:1px solid #42546e;border-radius:6px;padding:9px;color:#eff5ff;font:inherit}
+textarea,pre{font-family:Consolas,monospace;font-size:13px}textarea{min-height:160px;resize:vertical}
+button{background:#4d72bc;border:0;border-radius:6px;padding:9px 12px;color:white;cursor:pointer;margin:9px 8px 0 0}
+button.secondary{background:#364963}button:hover{filter:brightness(1.2)}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#09121f;padding:12px;border:1px solid #253a57;border-radius:7px;min-height:105px}
+#tools{list-style:none;padding:0;max-height:60vh;overflow:auto;margin:10px 0}
+#tools li button{width:100%;text-align:left;margin:2px 0;background:#1b2b43}
+.top{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tag{font-size:11px;background:#1e5660;border-radius:5px;padding:2px 6px}
+footer{padding:16px 25px;color:#9eb1ca;border-top:1px solid #30405e;font-size:12px}
+@media(max-width:800px){.layout{display:block}#tools{max-height:260px}}
+</style></head>
+<body><header><h1>WMK Game Studio — API Explorer</h1><p>Leia e modifique projetos GDevelop por HTTP, usando as ferramentas MCP que a versão aberta do editor disponibilizar.</p></header>
+<div class="layout"><aside>
+<div class="group"><h2>Conexão</h2>
+<label for="token">Token da ponte local</label><input id="token" type="password" autocomplete="off" placeholder="Copie do terminal">
+<div class="top"><button id="connect">Conectar e listar</button><button class="secondary" id="health">Testar conexão</button></div>
+<p id="status">Sem conexão.</p><small>A ponte não grava seu token no navegador; você o informa novamente a cada sessão.</small>
+</div>
+<div class="group"><div class="top"><h2>Operações MCP</h2><span class="tag" id="count">0</span></div>
+<label for="filter">Filtrar por nome ou descrição</label><input id="filter" placeholder="scene, object, create, export...">
+<ul id="tools"></ul><p><small>O número de operações depende das ferramentas reais do editor e da versão do GDevelop. O catálogo não inventa comandos.</small></p>
+</div>
+</aside><main>
+<div class="group"><h2>Endpoint selecionado</h2>
+<p id="selected">Escolha uma ferramenta no painel à esquerda.</p>
+<label for="endpoint">Caminho da API</label><input id="endpoint" readonly>
+<label for="schema">Esquema de parâmetros (JSON Schema)</label><pre id="schema">{}</pre>
+<label for="arguments">Parâmetros JSON (edite conforme o esquema)</label>
+<textarea id="arguments">{}</textarea>
+<div class="top"><button id="execute">Executar operação</button><button id="copy" class="secondary">Copiar URL</button><button id="openapi" class="secondary">Abrir catálogo OpenAPI</button></div>
+<p><small>Por segurança, a escrita exige iniciar a ponte com WMK_ALLOW_WRITE=true. Faça backup antes de criar ou alterar elementos.</small></p>
+</div>
+<div class="group"><h2>Resposta da API</h2><pre id="result">Aguardando requisição...</pre></div>
+<div class="group"><h2>Montagem de jogos em lote</h2>
+<p>Execute uma sequência de operações do editor. Descubra os nomes e parâmetros no catálogo antes de enviar a lista.</p>
+<textarea id="batch">{
+  "stopOnError": true,
+  "calls": [
+    {
+      "name": "substituir_por_uma_ferramenta_real",
+      "arguments": {}
+    }
+  ]
+}</textarea>
+<button id="runbatch">Executar lote</button>
+<p><small>Operações são sequenciais e não transacionais. Não há rollback automático.</small></p>
+</div></main></div><footer>WMK Game Studio · Walney Moreira Klein — walneyk@hotmail.com · Preservados créditos e licenças originais GDevelop.</footer>
+<script>
+(() => {
+  const byId=id=>document.getElementById(id);
+  let tools=[],selected=null;
+  const token=()=>byId('token').value.trim();
+  const request=async (url,method='GET',body)=>{
+    const res=await fetch(url,{method,headers:{
+      Authorization:'Bearer '+token(),
+      ...(body?{'Content-Type':'application/json'}:{})
+    },body:body?JSON.stringify(body):undefined});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error || 'Erro HTTP '+res.status);
+    return data;
+  };
+  const output=(value)=>byId('result').textContent=JSON.stringify(value,null,2);
+  const errors=e=>output({error:e.message});
+  const list=()=>{
+    const q=byId('filter').value.trim().toLowerCase();
+    const ul=byId('tools');ul.replaceChildren();
+    tools.filter(t=>t.name.toLowerCase().includes(q)||(t.description||'').toLowerCase().includes(q))
+      .forEach(t=>{
+        const li=document.createElement('li'),button=document.createElement('button');
+        button.type='button';button.textContent=t.name;
+        button.title=t.description || t.name;
+        button.onclick=()=>choose(t);li.appendChild(button);ul.appendChild(li);
+      });
+  };
+  const choose=t=>{
+    selected=t;const route='/api/v1/endpoints/'+encodeURIComponent(t.name);
+    byId('selected').textContent=t.description || t.name;
+    byId('endpoint').value=route;
+    byId('schema').textContent=JSON.stringify(t.inputSchema || {type:'object'},null,2);
+    byId('arguments').value='{}';
+  };
+  byId('connect').onclick=async ()=>{
+    try{const r=await request('/api/v1/endpoints');
+      tools=r.endpoints;byId('count').textContent=tools.length+' funções';
+      byId('status').textContent='Conectado. '+r.count+' operações disponíveis.';
+      list();output({count:r.count,help:'Selecione uma operação.'});
+    }catch(e){byId('status').textContent='Falha: '+e.message;errors(e);}
+  };
+  byId('health').onclick=async()=>{try{output(await request('/api/v1/health'));}catch(e){errors(e);}};
+  byId('filter').oninput=list;
+  byId('execute').onclick=async()=>{try{
+    if(!selected)throw new Error('Selecione uma operação.');
+    output(await request(byId('endpoint').value,'POST',JSON.parse(byId('arguments').value)));
+  }catch(e){errors(e);}};
+  byId('runbatch').onclick=async()=>{try{output(await request('/api/v1/batch','POST',JSON.parse(byId('batch').value)));}catch(e){errors(e);}};
+  byId('copy').onclick=()=>{if(selected && navigator.clipboard)navigator.clipboard.writeText(location.origin+byId('endpoint').value);};
+  byId('openapi').onclick=async()=>{try{output(await request('/api/v1/openapi.json'));}catch(e){errors(e);}};
+})();
+</script></body></html>
