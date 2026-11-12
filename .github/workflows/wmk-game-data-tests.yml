@@ -1,0 +1,32 @@
+name: WMK Game Data - Testes JSON e SQLite
+on:
+  push:
+    branches: [wmk-js-object-editor-v1]
+    paths:
+      - 'wmk-bridge/**'
+      - '.github/workflows/wmk-game-data-tests.yml'
+  pull_request:
+    paths:
+      - 'wmk-bridge/**'
+      - '.github/workflows/wmk-game-data-tests.yml'
+permissions:
+  contents: read
+jobs:
+  game-data:
+    name: Testar JSON SQLite e isolamento de chaves
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validar sintaxe da ponte
+        run: |
+          node --check wmk-bridge/server.js
+          node --check wmk-bridge/GameStoreManager.js
+          node --check wmk-bridge/GameDataStore.js
+          node --check wmk-bridge/SqliteGameStore.js
+          node --check wmk-bridge/GameKeyStore.js
+      - name: Testar armazenamento e segurança
+        run: node --test wmk-bridge/tests/*.test.js
