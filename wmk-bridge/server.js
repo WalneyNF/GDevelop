@@ -8,6 +8,8 @@ const http = require('node:http');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const {createJsonGameStore} = require('./GameDataStore');
+const gameStore = createJsonGameStore(process.env.WMK_GAME_DATA_DIR || path.join(__dirname, 'data'));
 
 const PORT = Number(process.env.WMK_BRIDGE_PORT || '8767');
 const MCP_URL = process.env.WMK_MCP_URL || 'http://127.0.0.1:52520/mcp';
@@ -113,7 +115,7 @@ async function api(req, res) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary','Origin');
     res.setHeader('Access-Control-Allow-Headers','Authorization,Content-Type');
-    res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods','GET,POST,PUT,DELETE,OPTIONS');
   }
   if (req.method === 'OPTIONS') {res.writeHead(204);res.end();return;}
   const pathname = new URL(req.url || '/', 'http://127.0.0.1').pathname;
@@ -132,6 +134,37 @@ async function api(req, res) {
   if (pathname === '/api/v1/health' && req.method === 'GET')
     return json(res, 200, {ok:true, bridge:'WMK External Bridge', version:'0.1.0',
       mcpConfigured:!!MCP_TOKEN, writeEnabled:WRITE_ENABLED});
+  // Game runtime data is independent from MCP editor operations.
+  // All routes use the same localhost-only Bearer authentication.
+  const gameDataMatch = /^\/api\/v1\/games\/([A-Za-z0-9_-]{1,64})(?:\/([A-Za-z0-9_-]{1,64}))?(?:\/([A-Za-z0-9_-]{1,64}))?$/.exec(pathname);
+  if (pathname === '/api/v1/games' && req.method === 'GET')
+    return json(res,200,{games:gameStore.listGames()});
+  if (gameDataMatch) {
+    const [, game, collection, id] = gameDataMatch;
+    if (!collection && req.method === 'GET')
+      return json(res,200,{game,collections:gameStore.listCollections(game)});
+    if (collection && !id && req.method === 'GET') {
+      if(new URL(req.url,'http://127.0.0.1').searchParams.has('stats')){
+        const field = new URL(req.url,'http://127.0.0.1').searchParams.get('field');
+        return json(res,200,gameStore.stats(game,collection,field));
+      }
+      const limit = Number(new URL(req.url,'http://127.0.0.1').searchParams.get('limit') || '100');
+      return json(res,200,gameStore.listRecords(game,collection,Number.isFinite(limit)?limit:100));
+    }
+    if (collection && id && req.method === 'GET') {
+      const row=gameStore.getRecord(game,collection,id);
+      if(!row)throw fail(404,'Registro não encontrado.');
+      return json(res,200,row);
+    }
+    if (!WRITE_ENABLED && ['POST','PUT','DELETE'].includes(req.method))
+      throw fail(403,'Gravação desabilitada: defina WMK_ALLOW_WRITE=true.');
+    if (collection && !id && req.method === 'POST')
+      return json(res,201,gameStore.writeRecord(game,collection,await bodyAsJson(req)));
+    if (collection && id && req.method === 'PUT')
+      return json(res,200,gameStore.writeRecord(game,collection,await bodyAsJson(req),id));
+    if (collection && id && req.method === 'DELETE')
+      return json(res,200,{deleted:gameStore.deleteRecord(game,collection,id)});
+  }
   if (pathname === '/api/v1/tools' && req.method === 'GET')
     return json(res, 200, {tools:await tools()});
   if (pathname === '/api/v1/endpoints' && req.method === 'GET') {
@@ -201,6 +234,17 @@ async function api(req, res) {
     const paths={
       '/api/v1/health':{get:{summary:'Estado da ponte',responses:{'200':{description:'Estado'}}}},
       '/api/v1/endpoints':{get:{summary:'Catálogo de operações disponíveis',responses:{'200':{description:'Ferramentas disponíveis'}}}},
+      '/api/v1/games':{get:{summary:'Lista bancos de dados de jogos locais',responses:{'200':{description:'IDs de jogos'}}}},
+      '/api/v1/games/{game}':{get:{summary:'Lista coleções do jogo',parameters:[{in:'path',name:'game',required:true,schema:{type:'string'}}],responses:{'200':{description:'Coleções'}}}},
+      '/api/v1/games/{game}/{collection}':{
+        get:{summary:'Lista registros ou estatísticas (?stats&field=campo)',responses:{'200':{description:'Registros'}}},
+        post:{summary:'Cria registro JSON',responses:{'201':{description:'Registro criado'}}}
+      },
+      '/api/v1/games/{game}/{collection}/{id}':{
+        get:{summary:'Obtém registro por ID',responses:{'200':{description:'Registro'}}},
+        put:{summary:'Atualiza registro JSON',responses:{'200':{description:'Registro atualizado'}}},
+        delete:{summary:'Exclui registro',responses:{'200':{description:'Exclusão'}}}
+      },
       '/api/v1/batch':{post:{summary:'Executa até 30 operações sequencialmente; sem rollback',responses:{'200':{description:'Resultados'}}}},
     };
     for(const tool of available){
