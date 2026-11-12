@@ -1,0 +1,86 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WMK Game Data — Demo de moedas e ranking</title>
+<style>
+:root{font:15px system-ui,Segoe UI,sans-serif;color-scheme:dark;background:#0c1423;color:#ecf5ff}
+*{box-sizing:border-box}body{margin:0}header{padding:20px;background:#17273d;border-bottom:1px solid #354d68}
+h1{font-size:23px;margin:0;color:#77ddc8}.wrap{max-width:950px;margin:auto;padding:18px;display:grid;grid-template-columns:1.2fr 1fr;gap:15px}
+.panel{padding:18px;background:#17273d;border:1px solid #3b526e;border-radius:12px;margin-bottom:15px}
+p,small{color:#b9cae0}label{display:block;margin:10px 0 4px}
+input{width:100%;background:#0c1829;border:1px solid #4b607b;color:white;padding:10px;border-radius:7px}
+button{color:white;background:#247367;border:1px solid #479989;padding:10px 14px;border-radius:8px;cursor:pointer;margin:10px 6px 0 0}
+button:disabled{opacity:.5}#coin{display:block;font-size:70px;margin:28px auto;background:#2c304e;border:2px solid #e8bc50;border-radius:100%;width:150px;height:150px}
+.score{font-size:42px;color:#77ddc8;font-weight:800}ol{padding-left:27px}li{padding:7px;border-bottom:1px solid #34465e}#message{min-height:28px;color:#a3d8fb}
+a{color:#9cbdff}footer{padding:16px;color:#a8bdd3;text-align:center;border-top:1px solid #34465e}
+@media(max-width:700px){.wrap{display:block}}
+</style></head><body>
+<header><h1>WMK Coin Lab</h1><p>Minijogo de demonstração: pontos salvos no WMK Game Data em JSON ou SQLite</p></header>
+<div class="wrap">
+<div>
+<div class="panel"><h2>Colete moedas!</h2><div class="score" id="score">0</div><p>Cada clique vale 10 pontos.</p>
+<button id="coin" aria-label="Coletar moeda">🪙</button>
+<button id="reset">Zerar pontos locais</button></div>
+<div class="panel"><h2>Salvar resultado no banco</h2>
+<label for="player">Nome do jogador (teste)</label><input id="player" value="Jogador 1" maxlength="40">
+<label for="game">Identificador do jogo</label><input id="game" value="wmk_coin_lab" maxlength="64">
+<label for="key">Chave do jogo com escopo write</label><input id="key" type="password" placeholder="wmkg_..." autocomplete="off">
+<button id="save">Salvar pontuação</button><button id="ranking">Atualizar ranking</button>
+<p id="message" role="status"></p>
+<small>Este exemplo é exclusivamente local. A chave não é salva no navegador. Não publique chaves em jogos distribuídos.</small></div>
+</div>
+<div>
+<div class="panel"><h2>Ranking de demonstração</h2><ol id="board"><li>Salve pontuações e clique em Atualizar ranking.</li></ol>
+<p>O backend usa o banco configurado no servidor — a página não precisa saber se é JSON ou SQLite.</p></div>
+<div class="panel"><h2>Guia rápido</h2><p>1. Inicie a ponte com escrita habilitada.</p>
+<p>2. No painel da API, crie uma chave para o jogo <code>wmk_coin_lab</code>, com escopo <code>write</code>.</p>
+<p>3. Se quiser SQLite, configure o backend antes de salvar registros.</p>
+<p>4. Copie a chave somente para este teste local e registre alguns pontos.</p>
+<p><a href="/manual-game-data">Abrir manual completo de JSON e SQLite</a></p>
+</div>
+</div></div>
+<footer>WMK Game Studio — Walney Moreira Klein — walneyk@hotmail.com · Créditos e licenças originais GDevelop preservados.</footer>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+let points=0;
+const status=text=>$('message').textContent=text;
+$('coin').onclick=()=>{$('score').textContent=String(points+=10)};
+$('reset').onclick=()=>{$('score').textContent=String(points=0)};
+const url=()=>{
+ const g=$('game').value.trim();
+ if(!/^[A-Za-z0-9_-]{1,64}$/.test(g))throw Error('Identificador do jogo inválido');
+ return '/api/v1/games/'+g+'/pontuacoes';
+};
+const call=async(method,body)=>{
+ const headers={Authorization:'Bearer '+$('key').value.trim()};
+ if(body)headers['Content-Type']='application/json';
+ const response=await fetch(url(),{method,headers,body:body?JSON.stringify(body):undefined});
+ const data=await response.json();
+ if(!response.ok)throw Error(data.error||'HTTP '+response.status);
+ return data;
+};
+$('save').onclick=async()=>{
+ try {
+   const jogador=$('player').value.trim();
+   if(!jogador||jogador.length>40)throw Error('Informe um jogador com até 40 caracteres');
+   if(!$('key').value.trim())throw Error('Informe a chave do jogo');
+   const row=await call('POST',{jogador,pontos:points});
+   status('Salvo com sucesso! Registro '+row.id);
+   await updateRanking();
+ }catch(e){status('Erro: '+e.message)}
+};
+async function updateRanking(){
+ const data=await call('GET');
+ const items=data.items.slice().sort((a,b)=>(Number(b.pontos)||0)-(Number(a.pontos)||0));
+ const list=$('board');list.replaceChildren();
+ if(!items.length){const li=document.createElement('li');li.textContent='Nenhum registro ainda.';list.appendChild(li);}
+ items.slice(0,20).forEach(item=>{
+   const li=document.createElement('li');
+   li.textContent=String(item.jogador||'Jogador')+' — '+String(item.pontos||0)+' pontos';
+   list.appendChild(li);
+ });
+ status('Ranking atualizado. Total de registros: '+data.total);
+}
+$('ranking').onclick=()=>updateRanking().catch(e=>status('Erro: '+e.message));
+})();
+</script></body></html>
