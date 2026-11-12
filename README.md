@@ -301,6 +301,20 @@ O GDevelop é um editor de jogos **livre e de código aberto** com ferramentas p
 
 O GDevelop original possui seus próprios [roadmap](https://trello.com/b/qf0lM7k8/gdevelop-roadmap), [issues](https://github.com/4ian/GDevelop/issues) e [discussões](https://github.com/4ian/GDevelop/discussions), independentes das prioridades do fork WMK.
 
+## WMK Game Data — banco para os seus jogos
+
+O fork oferece uma **API local experimental** para guardar e consultar dados de jogos em **JSON ou SQLite**, sem precisar escrever SQL no código do jogo.
+
+- **Manual:** [WMK Game Data — JSON e SQLite](wmk-bridge/manual-game-data.html).
+- **Minijogo demonstrativo:** [WMK Coin Lab — moedas e ranking](wmk-bridge/demo-game-data.html).
+- **Explorador de endpoints:** [WMK API Explorer](wmk-bridge/painel.html).
+- **Servidor HTTP:** [wmk-bridge/server.js](wmk-bridge/server.js).
+- **Testes automatizados:** [wmk-bridge/tests/game-data.test.js](wmk-bridge/tests/game-data.test.js).
+
+Inicie a ponte local com Node.js 24 e abra `http://127.0.0.1:8767/manual-game-data` ou `http://127.0.0.1:8767/demo-game-data`. O banco é selecionado por jogo por um endpoint administrativo; chaves individuais permitem acesso apenas ao jogo correspondente. **Não divulgue a chave do jogo dentro do HTML público e não exponha o servidor local na internet.** Para sites públicos, utilize um backend com autenticação por jogador.
+
+Esses recursos estão na branch experimental e não substituem a validação manual de segurança e integração.
+
 ## Licenças e atribuições
 
 - As bibliotecas `Core`, `GDJS`, a IDE `newIDE` e extensões estão sob a **licença MIT**, respeitadas as licenças específicas e obrigações das dependências. Consulte [LICENSE.md](LICENSE.md) e os arquivos de licença nas respectivas pastas.
